@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const nav = document.querySelector("#main-nav");
   const mobileMenu = document.querySelector("#mobile-menu");
   const navLinks = document.querySelector(".nav-links");
+  const icon = mobileMenu.querySelector("i");
 
   // Sticky Header Logic
   window.addEventListener("scroll", () => {
@@ -15,71 +16,52 @@ document.addEventListener("DOMContentLoaded", () => {
   // Mobile Menu Toggle
   mobileMenu.addEventListener("click", () => {
     navLinks.classList.toggle("active");
-    // Simple animation for the toggle
-    const icon = mobileMenu.querySelector("i");
     if (navLinks.classList.contains("active")) {
-      icon.classList.remove("fa-bars");
-      icon.classList.add("fa-times");
-
-      // Set styles for active menu
-      navLinks.style.display = "flex";
-      navLinks.style.flexDirection = "column";
-      navLinks.style.position = "absolute";
-      navLinks.style.top = "100%";
-      navLinks.style.left = "0";
-      navLinks.style.width = "100%";
-      navLinks.style.background = "#fff";
-      navLinks.style.padding = "2rem";
-      navLinks.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
+      icon.classList.replace("fa-bars", "fa-times");
     } else {
-      icon.classList.remove("fa-times");
-      icon.classList.add("fa-bars");
-      navLinks.style.display = "none";
+      icon.classList.replace("fa-times", "fa-bars");
     }
   });
 
-  // Intersection Observer for animations on scroll
+  // Close mobile menu when clicking a link
+  document.querySelectorAll(".nav-links a").forEach(link => {
+    link.addEventListener("click", () => {
+      navLinks.classList.remove("active");
+      icon.classList.replace("fa-times", "fa-bars");
+    });
+  });
+
+  // Intersection Observer for scroll animations
   const observerOptions = {
-    threshold: 0.1,
+    threshold: 0.15,
+    rootMargin: "0px 0px -50px 0px"
   };
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        entry.target.classList.add("fade-in-visible");
+        entry.target.classList.add("appear");
+        observer.unobserve(entry.target);
       }
     });
   }, observerOptions);
 
-  // Apply animation classes to elements
   const animateElements = document.querySelectorAll(
-    ".service-card, .portfolio-item, .section-title, .about-content",
+    ".service-card, .portfolio-item, .section-title, .about-content, .metric-item, .contact-box"
   );
+
   animateElements.forEach((el) => {
-    el.style.opacity = "0";
-    el.style.transform = "translateY(30px)";
-    el.style.transition = "all 0.8s ease-out";
+    el.classList.add("fade-in-prepare");
     observer.observe(el);
   });
 
-  // Override the Intersection Observer logic for the actual animation
-  document.addEventListener("scroll", () => {
-    animateElements.forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight - 100) {
-        el.style.opacity = "1";
-        el.style.transform = "translateY(0)";
-      }
-    });
-  });
-
-  // Form submission handling (Prevent default for demo)
+  // Form submission handling
   const form = document.querySelector("form");
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       alert(
-        "Thank you for your inquiry. Our premium concierge team will contact you shortly.",
+        "Terima kasih atas pertanyaan Anda. Tim pramutamu premium kami akan segera menghubungi Anda.",
       );
       form.reset();
     });
@@ -89,10 +71,19 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       e.preventDefault();
-      const target = document.querySelector(this.getAttribute("href"));
+      const targetId = this.getAttribute("href");
+      if (targetId === "#") return;
+      
+      const target = document.querySelector(targetId);
       if (target) {
+        const offset = 80;
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = target.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
+
         window.scrollTo({
-          top: target.offsetTop - 80,
+          top: offsetPosition,
           behavior: "smooth",
         });
       }
